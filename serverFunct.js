@@ -4,6 +4,7 @@ var http = require('http').createServer(app);
 var serverIo = require('socket.io')(http);
 var clientIo = require('socket.io-client');
 var publicIp = require("public-ip");
+const fs = require('fs');
 
 
 var serverPort = 3001;
@@ -18,9 +19,12 @@ var mode       = undefined;
 //  0-> provider
 //  1-> validator
 
-//test declarations
+//test declarations//////////////////////
 mode = 0;
-///////////////////
+fs.readFile('image.zip' , (err, data)=>{
+    buffer = data;
+});
+////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////Get IP///////////////////////////////////////////////////////////////////////////////////
 var getIp = (async() => {
@@ -64,6 +68,23 @@ serverIo.on('connection', function(socket){
         console.log("NO FILE FOUND!! Something seriously wrong has happened. The environment does not have the result saved for some reason.");
         }
     });
+
+    if(buffer === undefined){
+        socket.emit('request');
+    }
+    
+    //this is called when a server send data in responce to this current computer's request
+    socket.on('transmitting', ( data )=>{
+        console.log("Got data: " + data)
+        if(data !== undefined){                     
+            clientSocket.disconnect(true);
+            writeFile(data);
+        }
+        else{
+            socket.emit('request');
+        }
+    });
+    
 });
 
 //creates the server
@@ -75,9 +96,11 @@ http.listen(serverPort , function(){
 //function to write a file
 //this is a helper function for request
 function writeFile(data){
-    fs.writeFile("data.zip", data, (err) => {
+    fs.writeFile("image.zip", data, (err) => {
         if(err){
-            writeFile(data)
+            //writeFile(data) ///might cause an infinite loop, probably should just wait
+            console.log('corrupted file')
+            return;
         }
         else {
             execute();
