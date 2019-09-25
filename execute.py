@@ -21,5 +21,7 @@ os.system("sudo rm -rf image.tgz")
 os.system("sudo docker commit $(sudo docker container ls -q) execute:latest")
 #this will remove the image to be transmitted to the next step
 os.system("sudo docker save execute -o image.tgz")
+#zip the file
+os.system("zip -0 image.zip image.tgz")
 #this will stop the docker image
 os.system("sudo docker stop $(sudo docker container ls -q)")
